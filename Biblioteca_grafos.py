@@ -4,10 +4,11 @@ import math
 class Nodo:
     def __init__(self, id):
         self.id = id
+        self.aristas = set()
         self.atributos = []  # Lista de atributos
 
-    def __del__(self):
-        pass  # No realiza ninguna acción al destruir el nodo
+    def __repr__(self):
+        return f"Nodo(id={self.id}, aristas={len(self.aristas)}, atributos={self.atributos})"
 
 class Arista:
     def __init__(self, nodo1, nodo2):
@@ -34,7 +35,10 @@ class Grafo:
         self.nodos.append(nodo)
 
     def existe_arista(self, arista):
-        return arista in self.aristas
+        if self.dirigido:
+            return arista in self.aristas
+        else:
+            return arista in self.aristas or Arista(arista.nodo2, arista.nodo1) in self.aristas
 
     def agregar_arista(self, arista):
         if not self.existe_arista(arista):
