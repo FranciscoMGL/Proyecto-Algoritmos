@@ -1,28 +1,7 @@
+from CNodo import Nodo
+from CArista import Arista
 import random
 import math
-
-class Nodo:
-    def __init__(self, id):
-        self.id = id
-        self.aristas = set()
-        self.atributos = []  # Lista de atributos
-
-    def __repr__(self):
-        return f"Nodo(id={self.id}, aristas={len(self.aristas)}, atributos={self.atributos})"
-
-class Arista:
-    def __init__(self, nodo1, nodo2):
-        self.nodo1 = nodo1
-        self.nodo2 = nodo2
-        self.atributos = []  # Lista de atributos
-
-    def __eq__(self, other):
-        return (self.nodo1.id == other.nodo1.id and self.nodo2.id == other.nodo2.id) or \
-               (self.nodo1.id == other.nodo2.id and self.nodo2.id == other.nodo1.id)
-
-    def __hash__(self):
-        # Devuelve un hash basado en los IDs de los nodos
-        return hash((min(self.nodo1.id, self.nodo2.id), max(self.nodo1.id, self.nodo2.id)))
 
 class Grafo:
     def __init__(self, dirigido=False):
@@ -47,6 +26,9 @@ class Grafo:
     def guardar_graphviz(self, filename):
         with open(filename, 'w') as f:
             f.write("graph G {\n" if not self.dirigido else "digraph G {\n")
+            for nodo in self.nodos:
+                f.write(f'  "{nodo.id}";\n')
+
             for arista in self.aristas:
                 if self.dirigido:
                     f.write(f'    "{arista.nodo1.id}" -> "{arista.nodo2.id}";\n')
@@ -89,16 +71,24 @@ def grafoErdosRenyi(n, m, dirigido=False):
         grafo.agregar_nodo(nodo)
 
     aristas = set()
+
+    for i in range(n-1):
+        arista = Arista(nodos[i], nodos[i+1])
+        aristas.add(arista)
+        grafo.agregar_arista(arista)
+    
     while len(aristas) < m:
         n1, n2 = random.sample(range(n), 2)
-        arista = Arista(nodos[n1], nodos[n2])
-        if dirigido:
-            aristas.add((n1, n2))
-        else:
-            aristas.add((min(n1, n2), max(n1, n2)))
+        if n1 == n2:
+            continue
 
-    for n1, n2 in aristas:
-        grafo.agregar_arista(Arista(nodos[n1], nodos[n2]))
+        arista = Arista(nodos[n1], nodos[n2])
+    
+        if not dirigido and (arista in aristas or Arista(nodos[n2], nodos[n1]) in aristas):
+          continue
+
+        aristas.add(arista)
+        grafo.agregar_arista(arista)
 
     return grafo
 
@@ -116,9 +106,10 @@ def grafoGilbert(n, p, dirigido=False):
         grafo.agregar_nodo(nodo)
 
     for i in range(n):
-        for j in range(i + 1, n):
-            if random.random() < p:
-                grafo.agregar_arista(Arista(nodos[i], nodos[j]))
+        for j in range(n):
+            if i != j:
+                if random.random() < p:
+                    grafo.agregar_arista(Arista(nodos[i], nodos[j]))
 
     return grafo
 
@@ -142,6 +133,8 @@ def grafoGeografico(n, r, dirigido=False):
                                   (posiciones[i][1] - posiciones[j][1]) ** 2)
             if distancia <= r:
                 grafo.agregar_arista(Arista(nodos[i], nodos[j]))
+                if not dirigido:
+                    grafo.agregar_arista(Arista(nodos[j], nodos[i]))
 
     return grafo
 
@@ -169,10 +162,10 @@ def grafoBarabasiAlbert(n, d, dirigido=False):
         targets = set()
         while len(targets) < d:
             nodo_existente = random.choice(grafo.nodos)
-            targets.add(nodo_existente.id)
+            targets.add(nodo_existente)
         
         for target in targets:
-            grafo.agregar_arista(Arista(nuevo_nodo, grafo.nodos[target]))
+            grafo.agregar_arista(Arista(nuevo_nodo, target))
 
     return grafo
 
