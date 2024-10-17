@@ -9,7 +9,7 @@ class EjemploGrafo:
 
         try:
             # Grafo Erdös-Rényi
-            self.grafo_erdos = grafoErdosRenyi(self.nodos, int(self.nodos * (self.nodos - 1) / 2 * 0.1))
+            self.grafo_erdos = grafoErdosRenyi(self.nodos, self.nodos+5)
             print("Grafo Erdös-Rényi:")
             self.grafo_erdos.mostrar_grafo()
             self.grafo_erdos.guardar_graphviz(f"grafo_erdos_{self.nodos}.gv")
@@ -19,7 +19,7 @@ class EjemploGrafo:
 
         try:
             # Grafo Gilbert
-            self.grafo_gilbert = grafoGilbert(self.nodos, 0.1)
+            self.grafo_gilbert = grafoGilbert(self.nodos, 0.2)
             print("Grafo Gilbert:")
             self.grafo_gilbert.mostrar_grafo()
             self.grafo_gilbert.guardar_graphviz(f"grafo_gilbert_{self.nodos}.gv")
@@ -29,7 +29,7 @@ class EjemploGrafo:
 
         try:
             # Grafo Geográfico
-            self.grafo_geografico = grafoGeografico(self.nodos, 0.1)
+            self.grafo_geografico = grafoGeografico(self.nodos, 0.2)
             print("Grafo Geográfico:")
             self.grafo_geografico.mostrar_grafo()
             self.grafo_geografico.guardar_graphviz(f"grafo_geografico_{self.nodos}.gv")
