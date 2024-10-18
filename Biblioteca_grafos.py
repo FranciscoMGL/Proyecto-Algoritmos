@@ -155,15 +155,19 @@ def grafoBarabasiAlbert(n, d, dirigido=False):
         for j in range(i + 1, d):
             grafo.agregar_arista(Arista(inicial[i], inicial[j]))
 
+    aristas_totales = 2 * len(grafo.aristas)
+
     # Agregar nodos uno por uno
     for i in range(d, n):
         nuevo_nodo = Nodo(i)
         grafo.agregar_nodo(nuevo_nodo)
         targets = set()
+
         while len(targets) < d:
-            nodo_existente = random.choice(grafo.nodos)
-            targets.add(nodo_existente)
-        
+            nodo_existente = random.choices(grafo.nodos, weights=[len(nodo.aristas) + 1 for nodo in grafo.nodos], k=1)[0]
+            if nodo_existente != nuevo_nodo:
+                targets.add(nodo_existente)
+
         for target in targets:
             grafo.agregar_arista(Arista(nuevo_nodo, target))
 
