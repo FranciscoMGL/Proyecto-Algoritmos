@@ -9,7 +9,7 @@ class EjemploGrafo:
 
         try:
             # Grafo Erdös-Rényi
-            self.grafo_erdos = grafoErdosRenyi(self.nodos, self.nodos+5)
+            self.grafo_erdos = grafoErdosRenyi(self.nodos, self.nodos + int(self.nodos / 3))
             print("Grafo Erdös-Rényi:")
             self.grafo_erdos.mostrar_grafo()
             self.grafo_erdos.guardar_graphviz(f"grafo_erdos_{self.nodos}.gv")
