@@ -39,7 +39,7 @@ class EjemploGrafo:
 
         try:
             # Grafo Barabási-Albert
-            self.grafo_barabasi = grafoBarabasiAlbert(self.nodos, 2)
+            self.grafo_barabasi = grafoBarabasiAlbert(self.nodos, 3)
             print("Grafo Barabási-Albert:")
             self.grafo_barabasi.mostrar_grafo()
             self.grafo_barabasi.guardar_graphviz(f"grafo_barabasi_{self.nodos}.gv")
@@ -58,7 +58,7 @@ class EjemploGrafo:
             print(f"Error al crear Grafo Dorogovtsev-Mendes: {e}")
 
 def ejecutar_ejemplos():
-    nodos_list = [15, 30, 100, 500]
+    nodos_list = [30, 100, 500]
 
     # Crear y guardar grafos de malla
     grafo_malla_30 = grafoMalla(5, 6)

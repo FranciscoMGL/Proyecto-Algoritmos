@@ -19,6 +19,14 @@ class Grafo:
             return arista in self.aristas
         else:
             return arista in self.aristas or Arista(arista.nodo2, arista.nodo1) in self.aristas
+   
+    def agregar(self, arista):
+        if not self.existe_arista(arista):
+            self.aristas.add(arista)  # Añadir directamente al conjunto
+            arista.nodo1.aristas.add(arista )
+            arista.nodo2.aristas.add(arista )
+            return True
+        return False
 
     def agregar_arista(self, arista):
         if not self.existe_arista(arista):
@@ -144,45 +152,38 @@ def grafoGeografico(n, r, dirigido=False):
 
     return grafo
 
-def grafoBarabasiAlbert(n, d, dirigido=False):
-    """Genera un grafo según el modelo Barabási-Albert.""" 
-    if n <= 0:
-        raise ValueError("El número de nodos debe ser mayor que 0.")
-    if d <= 1:
-        raise ValueError("El grado d debe ser mayor que 1.")
-    if d >= n:
-        raise ValueError("El grado d debe ser menor que el número de nodos n.")
-
-    grafo = Grafo(dirigido)
+def grafoBarabasiAlbert(n, d, dirigido=False, auto=False):
     
-    # Inicializa con un grafo completo de d nodos
-    inicial = [Nodo(i) for i in range(d)]
-    for nodo in inicial:
+    if n < 1 or d < 2:
+        raise ValueError("Error: n > 0 y d > 1")
+    
+    grafo = Grafo(dirigido)
+    nodos_deg = dict() # Diccionario para llevar el conteo del grado de cada nodo.
+    
+    # Crear nodos
+    for nodo_id in range(n):
+        nodo = Nodo(nodo_id)
         grafo.agregar_nodo(nodo)
-    for i in range(d):
-        for j in range(i + 1, d):
-            grafo.agregar_arista(Arista(inicial[i], inicial[j]))
+        nodos_deg[nodo_id] = 0
+    
+    nodos = grafo.nodos
+    
+    # Agregar aristas al azar, con cierta probabilidad
+    for nodo in nodos:
+        for v in nodos:
+            if nodos_deg[nodo.id] == d:
+                break
+            if nodos_deg[v.id] == d:
+                continue
+            p = random.random()
+            equal_nodes = v == nodo
+            if equal_nodes and not auto:
+                continue
 
-    # Agregar nodos uno por uno
-    for i in range(d, n):
-        nuevo_nodo = Nodo(i)
-        grafo.agregar_nodo(nuevo_nodo)
-        targets = set()
-
-        while len(targets) < d:
-            total_aristas = sum(len(nodo.aristas) for nodo in grafo.nodos)
-
-            if total_aristas > 0:
-                probas = [len(nodo.aristas) for nodo in grafo.nodos]
-                nodo_existente = random.choices(grafo.nodos, weights=probas, k=1)[0]
-            else:
-                nodo_existente = random.choice(grafo.nodos)
-
-            if nodo_existente != nuevo_nodo and nodo_existente not in targets:
-                targets.add(nodo_existente)
-
-        for target in targets:
-            grafo.agregar_arista(Arista(nuevo_nodo, target))
+            if p <= 1 - nodos_deg[v.id] / d and grafo.agregar(Arista(nodo, v)):
+                nodos_deg[nodo.id] += 1
+                if not equal_nodes:
+                    nodos_deg[v.id] += 1
 
     return grafo
 
