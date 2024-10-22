@@ -39,7 +39,7 @@ class EjemploGrafo:
 
         try:
             # Grafo Barabási-Albert
-            self.grafo_barabasi = grafoBarabasiAlbert(self.nodos, 3)
+            self.grafo_barabasi = grafoBarabasiAlbert(self.nodos, 10)
             print("Grafo Barabási-Albert:")
             self.grafo_barabasi.mostrar_grafo()
             self.grafo_barabasi.guardar_graphviz(f"grafo_barabasi_{self.nodos}.gv")
