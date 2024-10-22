@@ -11,7 +11,8 @@ class Grafo:
         self.atributos = []  # Lista de atributos
 
     def agregar_nodo(self, nodo):
-        self.nodos.append(nodo)
+        if nodo not in self.nodos:
+            self.nodos.append(nodo)
 
     def existe_arista(self, arista):
         if self.dirigido:
@@ -39,6 +40,11 @@ class Grafo:
     def mostrar_grafo(self):
         print(f"Grafo {'dirigido' if self.dirigido else 'no dirigido'} creado con {len(self.nodos)} nodos y {len(self.aristas)} aristas.")
 
+    def grado_nodo(self, nodo):
+        if nodo in self.nodos:
+            return len(nodo.aristas)
+        return 0
+    
 def grafoMalla(m, n, dirigido=False):
     """Genera un grafo de malla de tamaño m x n."""
     if m <= 1 or n <= 1:
@@ -144,6 +150,8 @@ def grafoBarabasiAlbert(n, d, dirigido=False):
         raise ValueError("El número de nodos debe ser mayor que 0.")
     if d <= 1:
         raise ValueError("El grado d debe ser mayor que 1.")
+    if d >= n:
+        raise ValueError("El grado d debe ser menor que el número de nodos n.")
 
     grafo = Grafo(dirigido)
     
@@ -155,8 +163,6 @@ def grafoBarabasiAlbert(n, d, dirigido=False):
         for j in range(i + 1, d):
             grafo.agregar_arista(Arista(inicial[i], inicial[j]))
 
-    aristas_totales = 2 * len(grafo.aristas)
-
     # Agregar nodos uno por uno
     for i in range(d, n):
         nuevo_nodo = Nodo(i)
@@ -164,8 +170,15 @@ def grafoBarabasiAlbert(n, d, dirigido=False):
         targets = set()
 
         while len(targets) < d:
-            nodo_existente = random.choices(grafo.nodos, weights=[len(nodo.aristas) + 1 for nodo in grafo.nodos], k=1)[0]
-            if nodo_existente != nuevo_nodo:
+            total_aristas = sum(len(nodo.aristas) for nodo in grafo.nodos)
+
+            if total_aristas > 0:
+                probas = [len(nodo.aristas) for nodo in grafo.nodos]
+                nodo_existente = random.choices(grafo.nodos, weights=probas, k=1)[0]
+            else:
+                nodo_existente = random.choice(grafo.nodos)
+
+            if nodo_existente != nuevo_nodo and nodo_existente not in targets:
                 targets.add(nodo_existente)
 
         for target in targets:
