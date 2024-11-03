@@ -1,0 +1,5 @@
+graph G {
+  "Nodo(6)";
+  "Nodo(27)";
+    "Nodo(27)" -- "Nodo(6)";
+}
