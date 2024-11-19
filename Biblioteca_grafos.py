@@ -18,12 +18,9 @@ class Grafo:
     def existe_arista(self, arista):
         """ Verifica si existe una arista en el grafo (considerando que el grafo puede ser dirigido o no). """
         if self.dirigido:
-            # Para grafos dirigidos, buscamos la arista tal cual (con su peso)
             return arista in self.aristas
         else:
-            # Para grafos no dirigidos, buscamos la arista o la versión invertida
-            # Calculamos el peso por defecto
-            pesos_default = 1.0  # O el valor predeterminado que quieras
+            pesos_default = 1.0
             arista_invertida = Arista(arista.nodo2, arista.nodo1, pesos=pesos_default)
             return arista in self.aristas or arista_invertida in self.aristas
    
@@ -250,11 +247,10 @@ def grafoGeografico(n, r, dirigido=False):
             distancia = math.sqrt((posiciones[i][0] - posiciones[j][0]) ** 2 +
                                   (posiciones[i][1] - posiciones[j][1]) ** 2)
             if distancia <= r:
-                pesos = distancia  # Usamos la distancia como el peso de la arista
-                grafo.agregar_arista(Arista(nodos[i], nodos[j], pesos))  # Cambiado a 'pesos'
+                pesos = distancia 
+                grafo.agregar_arista(Arista(nodos[i], nodos[j], pesos))
                 if not dirigido:
-                    grafo.agregar_arista(Arista(nodos[j], nodos[i], pesos))  # Cambiado a 'pesos'
-
+                    grafo.agregar_arista(Arista(nodos[j], nodos[i], pesos))
     return grafo
 
 def grafoBarabasiAlbert(n, d, dirigido=False, auto=False):
@@ -284,7 +280,7 @@ def grafoBarabasiAlbert(n, d, dirigido=False, auto=False):
             if equal_nodes and not auto:
                 continue
 
-            if p <= 1 - nodos_deg[v.id] / d and grafo.agregar(Arista(nodo, v, pesos=random.uniform(1.0, 10.0))):  # Cambiado a 'pesos'
+            if p <= 1 - nodos_deg[v.id] / d and grafo.agregar(Arista(nodo, v, pesos=random.uniform(1.0, 10.0))): 
                 nodos_deg[nodo.id] += 1
                 if not equal_nodes:
                     nodos_deg[v.id] += 1
@@ -299,7 +295,7 @@ def grafoDorogovtsevMendes(n, dirigido=False):
     grafo = Grafo(dirigido)
     
     # Inicializa un triángulo
-    nodos = [Nodo(i, valor=random.uniform(0.0, 50.0)) for i in range(3)]  # Asegurándote de pasar el valor
+    nodos = [Nodo(i, valor=random.uniform(0.0, 50.0)) for i in range(3)] 
     for nodo in nodos:
         grafo.agregar_nodo(nodo)
     
