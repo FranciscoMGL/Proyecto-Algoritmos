@@ -1,7 +1,8 @@
 class Nodo:
-    def __init__(self, id):
+    def __init__(self, id, valor):
         self.id = id
         self.aristas = set()
+        self.valor = valor
         self.atributos = []  # Lista de atributos
     
     def __repr__(self):
