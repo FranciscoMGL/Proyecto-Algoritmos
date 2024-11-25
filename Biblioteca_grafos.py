@@ -1,5 +1,6 @@
 from CNodo import Nodo
 from CArista import Arista
+from CDisjunto import Disjunto
 import heapq
 import random
 import math
@@ -96,7 +97,91 @@ class Grafo:
                     heapq.heappush(cola_prioridad, (nueva_distancia, vecino))
 
         return distancias, predecesores
+    
+    def KruskalD(self):
+        # Ordenar las aristas por peso (de menor a mayor)
+        aristas_ordenadas = sorted(self.aristas, key=lambda arista: arista.pesos)
+        conjunto = Disjunto()
 
+        # Inicializar los conjuntos disjuntos
+        for nodo in self.nodos:
+            conjunto.conjunto(nodo)
+
+        aem = []
+
+        # Iterar sobre las aristas ordenadas
+        for arista in aristas_ordenadas:
+            nodo1 = arista.nodo1
+            nodo2 = arista.nodo2
+
+            # Si no forman un ciclo, agregar la arista al MST
+            if conjunto.explorar(nodo1) != conjunto.explorar(nodo2):
+                conjunto.union(nodo1, nodo2)
+                aem.append(arista)
+
+        return aem
+    
+    def KruskalI(self):
+        # Ordenar las aristas por peso (de mayor a menor)
+        aristas_ordenadas = sorted(self.aristas, key=lambda arista: arista.pesos, reverse=True)
+
+        conjunto = Disjunto()
+
+        # Inicializar los conjuntos disjuntos
+        for nodo in self.nodos:
+            conjunto.conjunto(nodo)
+
+        # Lista para el árbol de expansión máxima (MST)
+        aem = []
+
+        # Iterar sobre las aristas ordenadas (de mayor a menor peso)
+        for arista in aristas_ordenadas:
+            nodo1 = arista.nodo1
+            nodo2 = arista.nodo2
+
+            # Si no forman un ciclo, agregar la arista al MST
+            if conjunto.explorar(nodo1) != conjunto.explorar(nodo2):
+                conjunto.union(nodo1, nodo2)
+                aem.append(arista)
+
+        return aem
+    
+    def Prim(self):
+        """Implementación del algoritmo de Prim"""
+        if len(self.nodos) == 0:
+            return []  # Si no hay nodos en el grafo, no hay MST
+
+        # Elegir un nodo arbitrario (en este caso, el primero)
+        nodo_inicio = self.nodos[0]
+        
+        aem = []  # El árbol de expansión mínima
+        visitados = set()  # Nodos ya visitados
+        min_heap = []  # Usamos una cola de prioridad para obtener la arista mínima
+
+        # Empezamos con un nodo arbitrario
+        visitados.add(nodo_inicio)
+        for arista in nodo_inicio.aristas:
+            heapq.heappush(min_heap, (arista.pesos, arista))
+
+        while min_heap:
+            pesos, arista = heapq.heappop(min_heap)
+            nodo1 = arista.nodo1
+            nodo2 = arista.nodo2
+
+            # Si uno de los nodos de la arista no ha sido visitado, agregamos la arista al MST
+            if nodo1 not in visitados or nodo2 not in visitados:
+                aem.append(arista)
+                # Marcar el nodo no visitado como visitado
+                nuevo_nodo = nodo1 if nodo1 not in visitados else nodo2
+                visitados.add(nuevo_nodo)
+
+                # Agregar las nuevas aristas del nodo visitado a la cola de prioridad
+                for nueva_arista in nuevo_nodo.aristas:
+                    if nueva_arista.nodo1 not in visitados or nueva_arista.nodo2 not in visitados:
+                        heapq.heappush(min_heap, (nueva_arista.pesos, nueva_arista))
+
+        return aem
+    
     def vecinos_con_peso(self, nodo):
         #Devuelve una lista de tuplas (vecino, peso) para cada arista que conecta con el nodo.
         if nodo not in self.nodos:
@@ -109,6 +194,30 @@ class Grafo:
             elif arista.nodo2 == nodo:
                 vecinos.append((arista.nodo1, arista.pesos))
         return vecinos
+
+    def guardar_graphviz_kruskal_prim(self, archivo, aem):
+        """Guardar el Arbol de Expansión Minima (AEM) en formato Graphviz (.gv)"""
+        with open(archivo, 'w') as f:
+            f.write("graph G {\n")  # Esto es para grafos no dirigidos
+            # Agregar los nodos al archivo
+            nodos = set()  # Usamos un set para evitar nodos duplicados
+            for arista in aem:
+                nodos.add(arista.nodo1.id)
+                nodos.add(arista.nodo2.id)
+
+            # Escribir los nodos en el archivo
+            for nodo in nodos:
+                f.write(f'  "{nodo}";\n')  # Asegurarse de que los nombres de los nodos estén entre comillas
+
+            # Escribir las aristas del AEM en formato Graphviz
+            for arista in aem:
+                nodo1 = arista.nodo1.id  # Suponiendo que cada nodo tiene un identificador único
+                nodo2 = arista.nodo2.id
+                peso = arista.pesos
+                # Escribir las aristas con sus etiquetas y longitud
+                f.write(f'  "{nodo1}" -- "{nodo2}" [label="{peso}"];\n')
+
+            f.write("}\n")  # Cerrar la definición del grafo
 
     def guardar_graphviz_con_dijkstra(self, filename, nodo_inicio):
         distancias, predecesores = self.dijkstra(nodo_inicio)
@@ -145,7 +254,7 @@ class Grafo:
 
     def mostrar_grafo(self):
         print(f"Grafo {'dirigido' if self.dirigido else 'no dirigido'} creado con {len(self.nodos)} nodos y {len(self.aristas)} aristas.")
-
+    
     def grado_nodo(self, nodo):
         if nodo in self.nodos:
             return len(nodo.aristas)
