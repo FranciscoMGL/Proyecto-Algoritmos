@@ -1,6 +1,8 @@
 from CNodo import Nodo
 from CArista import Arista
 from CDisjunto import Disjunto
+from collections import deque
+import copy
 import heapq
 import random
 import math
@@ -67,6 +69,31 @@ class Grafo:
             # Cerrar la definición del grafo
             f.write("}\n")
     
+    def bfs(self, nodo_inicio):
+        """Implementación del algoritmo de búsqueda en anchura (BFS)"""
+        # Verificamos si el nodo de inicio está en el grafo
+        if nodo_inicio not in self.nodos:
+            raise ValueError("El nodo de inicio no existe en el grafo.")
+        
+        # Inicialización
+        visitados = set()  # Conjunto para llevar el registro de nodos visitados
+        cola = deque([nodo_inicio])  # Cola para los nodos a explorar
+        orden_bfs = []  # Lista para almacenar el orden de los nodos visitados
+        
+        visitados.add(nodo_inicio)  # Marcamos el nodo de inicio como visitado
+
+        while cola:
+            nodo_actual = cola.popleft()  # Tomamos el siguiente nodo de la cola
+            orden_bfs.append(nodo_actual)  # Agregamos el nodo actual a la lista de visitados
+
+            # Obtenemos los vecinos del nodo actual
+            for vecino, _ in self.vecinos_con_peso(nodo_actual):
+                if vecino not in visitados:
+                    visitados.add(vecino)  # Marcamos al vecino como visitado
+                    cola.append(vecino)  # Lo agregamos a la cola para explorarlo después
+
+        return orden_bfs
+
     def dijkstra(self, nodo_inicio):
         # Inicializar distancias con infinito para todos excepto el nodo de inicio
         distancias = {nodo: float('inf') for nodo in self.nodos}
@@ -122,63 +149,46 @@ class Grafo:
         return aem
     
     def KruskalI(self):
-        # Ordenar las aristas por peso (de mayor a menor)
-        aristas_ordenadas = sorted(self.aristas, key=lambda arista: arista.pesos, reverse=True)
+        # Crear una copia del grafo para no modificar el original
+        grafo_copia = copy.deepcopy(self)
 
-        conjunto = Disjunto()
+        # Ordenar las aristas por peso de forma descendente
+        aristas_ordenadas = sorted(grafo_copia.aristas, key=lambda arista: arista.pesos, reverse=True)
 
-        # Inicializar los conjuntos disjuntos
-        for nodo in self.nodos:
-            conjunto.conjunto(nodo)
-
-        # Lista para el árbol de expansión máxima (MST)
-        aem = []
-
-        # Iterar sobre las aristas ordenadas (de mayor a menor peso)
+        # Imprimir las aristas ordenadas para depuración
+        print("Aristas ordenadas por peso (de mayor a menor):")
         for arista in aristas_ordenadas:
-            nodo1 = arista.nodo1
-            nodo2 = arista.nodo2
+            print(f"Nodos: {arista.nodo1}, {arista.nodo2}, Peso: {arista.pesos}")
 
-            # Si no forman un ciclo, agregar la arista al MST
-            if conjunto.explorar(nodo1) != conjunto.explorar(nodo2):
-                conjunto.union(nodo1, nodo2)
-                aem.append(arista)
+        # Inicializar un conjunto para almacenar el AEM
+        aem = set()
 
-        return aem
-    
-    def Prim(self):
-        """Implementación del algoritmo de Prim"""
-        if len(self.nodos) == 0:
-            return []  # Si no hay nodos en el grafo, no hay MST
+        # Iterar sobre las aristas ordenadas
+        for arista in aristas_ordenadas:
+            # Eliminar la arista de la copia del grafo
+            grafo_copia.aristas = [a for a in grafo_copia.aristas if a != arista]
+            
+            # Verificar si el grafo sigue conectado usando BFS o DFS
+            nodos_alcanzados = grafo_copia.bfs(grafo_copia.nodos[0])
 
-        # Elegir un nodo arbitrario (en este caso, el primero)
-        nodo_inicio = self.nodos[0]
-        
-        aem = []  # El árbol de expansión mínima
-        visitados = set()  # Nodos ya visitados
-        min_heap = []  # Usamos una cola de prioridad para obtener la arista mínima
+            # Imprimir el estado de conectividad para depuración
+            print(f"Después de eliminar la arista {arista.nodo1}-{arista.nodo2}, nodos alcanzados: {len(nodos_alcanzados)}")
+            print(f"Número total de nodos en el grafo: {len(grafo_copia.nodos)}")
 
-        # Empezamos con un nodo arbitrario
-        visitados.add(nodo_inicio)
-        for arista in nodo_inicio.aristas:
-            heapq.heappush(min_heap, (arista.pesos, arista))
+            # Verificar si el grafo sigue conectado (si los nodos alcanzados no son todos los nodos)
+            if len(nodos_alcanzados) == len(grafo_copia.nodos):
+                # Si el grafo sigue conectado, agregar la arista al AEM
+                print(f"Arista {arista.nodo1}-{arista.nodo2} agregada al AEM")
+                aem.add(arista)
+            else:
+                # Si no sigue conectado, volver a agregar la arista
+                grafo_copia.agregar_arista(arista)
+                print(f"Arista {arista.nodo1}-{arista.nodo2} no agregada, se ha vuelto a insertar")
 
-        while min_heap:
-            pesos, arista = heapq.heappop(min_heap)
-            nodo1 = arista.nodo1
-            nodo2 = arista.nodo2
-
-            # Si uno de los nodos de la arista no ha sido visitado, agregamos la arista al MST
-            if nodo1 not in visitados or nodo2 not in visitados:
-                aem.append(arista)
-                # Marcar el nodo no visitado como visitado
-                nuevo_nodo = nodo1 if nodo1 not in visitados else nodo2
-                visitados.add(nuevo_nodo)
-
-                # Agregar las nuevas aristas del nodo visitado a la cola de prioridad
-                for nueva_arista in nuevo_nodo.aristas:
-                    if nueva_arista.nodo1 not in visitados or nueva_arista.nodo2 not in visitados:
-                        heapq.heappush(min_heap, (nueva_arista.pesos, nueva_arista))
+        # Imprimir el AEM final para depuración
+        print("AEM final:")
+        for arista in aem:
+            print(f"Nodos: {arista.nodo1}, {arista.nodo2}, Peso: {arista.peso}")
 
         return aem
     
@@ -215,7 +225,7 @@ class Grafo:
                 nodo2 = arista.nodo2.id
                 peso = arista.pesos
                 # Escribir las aristas con sus etiquetas y longitud
-                f.write(f'  "{nodo1}" -- "{nodo2}" [label="{peso}"];\n')
+                f.write(f'  "{nodo1}" -- "{nodo2}" [label="{round(peso, 2)}"];\n')
 
             f.write("}\n")  # Cerrar la definición del grafo
 

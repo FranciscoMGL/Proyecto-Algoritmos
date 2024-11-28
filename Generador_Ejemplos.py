@@ -75,8 +75,8 @@ def ejecutar_ejemplos():
     grafo_malla_30.guardar_graphviz_kruskal_prim("KruskalD_malla_30.gv", aem_kruskalD)
     aem_kruskalI = grafo_malla_30.KruskalI()
     grafo_malla_30.guardar_graphviz_kruskal_prim("KruskalI_malla_30.gv", aem_kruskalI)
-    aem_prim = grafo_malla_30.Prim()
-    grafo_malla_30.guardar_graphviz_kruskal_prim("Prim_malla_30.gv", aem_prim)
+    #aem_prim = grafo_malla_30.Prim()
+    #grafo_malla_30.guardar_graphviz_kruskal_prim("Prim_malla_30.gv", aem_prim)
     
     """
     grafo_malla_500 = grafoMalla(25, 20)

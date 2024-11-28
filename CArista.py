@@ -8,9 +8,11 @@ class Arista:
     def __repr__(self):
         return f"Arista({self.nodo1.id}, {self.nodo2.id}, {self.pesos})"
     
-    def __eq__(self, other):
-        # Dos aristas son iguales si tienen los mismos nodos, independientemente de la dirección
-        return (self.nodo1 == other.nodo1 and self.nodo2 == other.nodo2) or (self.nodo1 == other.nodo2 and self.nodo2 == other.nodo1)
+    def __eq__(self, otra_arista):
+        # Definimos cómo comparar dos aristas (por nodo1, nodo2 y peso)
+        return (self.nodo1 == otra_arista.nodo1 and 
+                self.nodo2 == otra_arista.nodo2 and 
+                self.pesos == otra_arista.pesos)
     
     def __hash__(self):
         # Necesitamos un hash para las aristas, esto es importante para cuando se usan en sets
