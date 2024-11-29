@@ -6,11 +6,47 @@ import copy
 import heapq
 import random
 import math
+class Nodo:
+    def __init__(self, id, valor):
+        self.id = id
+        self.aristas = []
+        self.valor = valor
+        self.atributos = []  # Lista de atributos
+    
+    def __repr__(self):
+        return f"Nodo(id={self.id}, aristas={len(self.aristas)}, atributos={self.atributos})"
+    
+    def __eq__(self,other):
+        if isinstance(other, Nodo):
+            return self.id == other.id
+        return False
+    
+    def __hash__(self):
+        return hash(self.id)
+    
+class Arista:
+    def __init__(self, nodo1, nodo2, pesos):  
+        self.nodo1 = nodo1
+        self.nodo2 = nodo2
+        self.pesos = pesos  # Guardamos el peso aquí
+        self.atributos = []  # Lista de atributos
 
+    def __repr__(self):
+        return f"Arista({self.nodo1.id}, {self.nodo2.id}, {self.pesos})"
+    
+    def __eq__(self, otra_arista):
+        # Definimos cómo comparar dos aristas (por nodo1, nodo2 y peso)
+        return (self.nodo1 == otra_arista.nodo1 and 
+                self.nodo2 == otra_arista.nodo2 and 
+                self.pesos == otra_arista.pesos)
+    
+    def __hash__(self):
+        # Necesitamos un hash para las aristas, esto es importante para cuando se usan en sets
+        return hash(frozenset([self.nodo1.id, self.nodo2.id]))
 class Grafo:
     def __init__(self, dirigido=False):
         self.nodos = []
-        self.aristas = set()  # Usar un conjunto para las aristas
+        self.aristas = []
         self.dirigido = dirigido
         self.atributos = []  # Lista de atributos
 
@@ -34,10 +70,10 @@ class Grafo:
             arista.nodo2.aristas.add(arista )
             return True
         return False
-            
+         
     def agregar_arista(self, arista):
         if not self.existe_arista(arista):
-            self.aristas.add(arista)  # Añadir directamente al conjunto
+            self.aristas.append(arista)  # Añadir directamente al conjunto
 
     def guardar_graphviz(self, filename):
         """
@@ -68,7 +104,7 @@ class Grafo:
 
             # Cerrar la definición del grafo
             f.write("}\n")
-    
+
     def bfs(self, nodo_inicio):
         """Implementación del algoritmo de búsqueda en anchura (BFS)"""
         # Verificamos si el nodo de inicio está en el grafo
@@ -133,7 +169,7 @@ class Grafo:
         # Inicializar los conjuntos disjuntos
         for nodo in self.nodos:
             conjunto.conjunto(nodo)
-
+        peso_total = 0
         aem = []
 
         # Iterar sobre las aristas ordenadas
@@ -145,24 +181,19 @@ class Grafo:
             if conjunto.explorar(nodo1) != conjunto.explorar(nodo2):
                 conjunto.union(nodo1, nodo2)
                 aem.append(arista)
+                peso_total += arista.pesos
 
+        print(f"Valor del arbol de expansion minima por Kruskal es: {round(peso_total,2)}")
         return aem
     
     def KruskalI(self):
         # Crear una copia del grafo para no modificar el original
         grafo_copia = copy.deepcopy(self)
-
+        aem = []  # Usamos una lista para almacenar las aristas del AEM
+        peso_total = 0
         # Ordenar las aristas por peso de forma descendente
-        aristas_ordenadas = sorted(grafo_copia.aristas, key=lambda arista: arista.pesos, reverse=True)
-
-        # Imprimir las aristas ordenadas para depuración
-        print("Aristas ordenadas por peso (de mayor a menor):")
-        for arista in aristas_ordenadas:
-            print(f"Nodos: {arista.nodo1}, {arista.nodo2}, Peso: {arista.pesos}")
-
-        # Inicializar un conjunto para almacenar el AEM
-        aem = set()
-
+        aristas_ordenadas = sorted(self.aristas, key=lambda arista: arista.pesos, reverse=True)
+        
         # Iterar sobre las aristas ordenadas
         for arista in aristas_ordenadas:
             # Eliminar la arista de la copia del grafo
@@ -171,27 +202,63 @@ class Grafo:
             # Verificar si el grafo sigue conectado usando BFS o DFS
             nodos_alcanzados = grafo_copia.bfs(grafo_copia.nodos[0])
 
-            # Imprimir el estado de conectividad para depuración
-            print(f"Después de eliminar la arista {arista.nodo1}-{arista.nodo2}, nodos alcanzados: {len(nodos_alcanzados)}")
-            print(f"Número total de nodos en el grafo: {len(grafo_copia.nodos)}")
-
-            # Verificar si el grafo sigue conectado (si los nodos alcanzados no son todos los nodos)
-            if len(nodos_alcanzados) == len(grafo_copia.nodos):
-                # Si el grafo sigue conectado, agregar la arista al AEM
-                print(f"Arista {arista.nodo1}-{arista.nodo2} agregada al AEM")
-                aem.add(arista)
+            # Si el grafo sigue conectado (todos los nodos alcanzados), no agregar la arista
+            if len(nodos_alcanzados) == len(self.nodos):
+                # Si el grafo sigue conectado, significa que la arista no es esencial para la conectividad
+                #print(f"Arista {arista.nodo1}-{arista.nodo2} no agregada al AEM porque el grafo sigue conectado")
+                continue
             else:
-                # Si no sigue conectado, volver a agregar la arista
+                # Si no sigue conectado, agregarla al AEM (porque es esencial para mantener la conectividad)
+                #print(f"Arista {arista.nodo1}-{arista.nodo2} agregada al AEM")
+                aem.append(arista)  # Agregar la arista al AEM
+                peso_total += arista.pesos
+                # Si el grafo se desconectó, debemos volver a insertar la arista para no romper la conectividad
                 grafo_copia.agregar_arista(arista)
-                print(f"Arista {arista.nodo1}-{arista.nodo2} no agregada, se ha vuelto a insertar")
 
         # Imprimir el AEM final para depuración
-        print("AEM final:")
-        for arista in aem:
-            print(f"Nodos: {arista.nodo1}, {arista.nodo2}, Peso: {arista.peso}")
-
+        #print("AEM final:")
+        #for arista in aem:
+            #print(f"Nodos: {arista.nodo1}, {arista.nodo2}, Peso: {arista.pesos}")
+        print(f"Valor del arbol de expansion minima por Kruskal Inverso es: {round(peso_total,2)}")
         return aem
     
+    def Prim(self):
+        # Elegir un nodo inicial aleatorio
+        nodo_inicio = random.choice(list(self.nodos))
+        #print(f"Nodo inicial seleccionado: {nodo_inicio}")
+
+        # Inicializar estructuras
+        visitados = set()
+        aem = []  # Lista de aristas del Árbol de Expansión Mínima
+        cola_prioridad = []
+        peso_total = 0
+        # Añadir las aristas del nodo inicial al heap
+        for vecino, peso in self.vecinos_con_peso(nodo_inicio):
+            heapq.heappush(cola_prioridad, (peso, nodo_inicio, vecino))
+
+        visitados.add(nodo_inicio)
+
+        # Construir el MST
+        while cola_prioridad:
+            peso, origen, destino = heapq.heappop(cola_prioridad)
+
+            # Ignorar si el nodo destino ya fue visitado
+            if destino in visitados:
+                continue
+
+            # Añadir la arista al MST
+            aem.append((origen, destino, peso))
+            peso_total += peso
+            visitados.add(destino)
+
+            # Añadir las aristas del nuevo nodo al heap
+            for vecino, peso in self.vecinos_con_peso(destino):
+                if vecino not in visitados:
+                    heapq.heappush(cola_prioridad, (peso, destino, vecino))
+
+        print(f"Valor del arbol de expansion minima por Prim es: {round(peso_total,2)}")
+        return aem
+
     def vecinos_con_peso(self, nodo):
         #Devuelve una lista de tuplas (vecino, peso) para cada arista que conecta con el nodo.
         if nodo not in self.nodos:
@@ -204,30 +271,51 @@ class Grafo:
             elif arista.nodo2 == nodo:
                 vecinos.append((arista.nodo1, arista.pesos))
         return vecinos
+    
+    def guardar_graphviz_algoritmo(self, archivo, aem, algoritmo):
+        if algoritmo == "prim":
+            with open(archivo, 'w') as f:
+                f.write("graph G {\n")  # Definir un grafo no dirigido
 
-    def guardar_graphviz_kruskal_prim(self, archivo, aem):
-        """Guardar el Arbol de Expansión Minima (AEM) en formato Graphviz (.gv)"""
-        with open(archivo, 'w') as f:
-            f.write("graph G {\n")  # Esto es para grafos no dirigidos
-            # Agregar los nodos al archivo
-            nodos = set()  # Usamos un set para evitar nodos duplicados
-            for arista in aem:
-                nodos.add(arista.nodo1.id)
-                nodos.add(arista.nodo2.id)
+                # Recopilar nodos únicos
+                nodos = set()
+                for arista in aem:
+                    nodo1, nodo2, peso = arista  # Desempaquetar la tupla
+                    nodos.add(nodo1)
+                    nodos.add(nodo2)
 
-            # Escribir los nodos en el archivo
-            for nodo in nodos:
-                f.write(f'  "{nodo}";\n')  # Asegurarse de que los nombres de los nodos estén entre comillas
+                # Escribir los nodos en el archivo, ordenados por su ID
+                for nodo in sorted(nodos, key=lambda x: x.id):  # Ordenar nodos por atributo 'id'
+                    f.write(f'  "{nodo.id}";\n')  # Usar el atributo 'id' para imprimir
 
-            # Escribir las aristas del AEM en formato Graphviz
-            for arista in aem:
-                nodo1 = arista.nodo1.id  # Suponiendo que cada nodo tiene un identificador único
-                nodo2 = arista.nodo2.id
-                peso = arista.pesos
-                # Escribir las aristas con sus etiquetas y longitud
-                f.write(f'  "{nodo1}" -- "{nodo2}" [label="{round(peso, 2)}"];\n')
+                # Escribir las aristas con sus etiquetas y pesos
+                for arista in aem:
+                    nodo1, nodo2, peso = arista  # Desempaquetar la tupla
+                    f.write(f'  "{nodo1.id}" -- "{nodo2.id}" [label="{round(peso, 2)}"];\n')
 
-            f.write("}\n")  # Cerrar la definición del grafo
+                f.write("}\n")  # Cerrar la definición del grafo
+        else:
+            with open(archivo, 'w') as f:
+                f.write("graph G {\n")  # Esto es para grafos no dirigidos
+                # Agregar los nodos al archivo
+                nodos = set()  # Usamos un set para evitar nodos duplicados
+                for arista in aem:
+                    nodos.add(arista.nodo1.id)
+                    nodos.add(arista.nodo2.id)
+
+                # Escribir los nodos en el archivo
+                for nodo in nodos:
+                    f.write(f'  "{nodo}";\n')  # Asegurarse de que los nombres de los nodos estén entre comillas
+
+                # Escribir las aristas del AEM en formato Graphviz
+                for arista in aem:
+                    nodo1 = arista.nodo1.id  # Suponiendo que cada nodo tiene un identificador único
+                    nodo2 = arista.nodo2.id
+                    peso = arista.pesos
+                    # Escribir las aristas con sus etiquetas y longitud
+                    f.write(f'  "{nodo1}" -- "{nodo2}" [label="{round(peso, 2)}"];\n')
+
+                f.write("}\n")  # Cerrar la definición del grafo
 
     def guardar_graphviz_con_dijkstra(self, filename, nodo_inicio):
         distancias, predecesores = self.dijkstra(nodo_inicio)
@@ -266,8 +354,9 @@ class Grafo:
         print(f"Grafo {'dirigido' if self.dirigido else 'no dirigido'} creado con {len(self.nodos)} nodos y {len(self.aristas)} aristas.")
     
     def grado_nodo(self, nodo):
-        if nodo in self.nodos:
-            return len(nodo.aristas)
+        for nodo in self.nodos:
+            if nodo in self.nodos:
+                return len(nodo.aristas)
         return 0
     
 def grafoMalla(m, n, dirigido=False):
@@ -372,37 +461,33 @@ def grafoGeografico(n, r, dirigido=False):
                     grafo.agregar_arista(Arista(nodos[j], nodos[i], pesos))
     return grafo
 
-def grafoBarabasiAlbert(n, d, dirigido=False, auto=False):
-    if n < 1 or d < 2:
-        raise ValueError("Error: n > 0 y d > 1")
+def grafoBarabasiAlbert(n, d, dirigido=False, auto=False): 
+    if n < 1 or d < 2: 
+        raise ValueError("Error: n > 0 y d > 1") 
+    grafo = Grafo(dirigido) 
+    grado_nodo = dict() 
+    for nodo_id in range(n): 
+        nodo = Nodo(nodo_id, valor=random.uniform(0.0, 50.0)) 
+        grafo.agregar_nodo(nodo) 
+        grado_nodo[nodo_id] = 0 
+        
+    nodos = grafo.nodos 
     
-    grafo = Grafo(dirigido)
-    nodos_deg = dict()  # Diccionario para llevar el conteo del grado de cada nodo.
-    
-    # Crear nodos
-    for nodo_id in range(n):
-        nodo = Nodo(nodo_id, valor=random.uniform(0.0, 50.0))  # Nodo con valor
-        grafo.agregar_nodo(nodo)
-        nodos_deg[nodo_id] = 0
-    
-    nodos = grafo.nodos
-    
-    # Agregar aristas al azar, con cierta probabilidad
-    for nodo in nodos:
-        for v in nodos:
-            if nodos_deg[nodo.id] == d:
-                break
-            if nodos_deg[v.id] == d:
-                continue
-            p = random.random()
-            equal_nodes = v == nodo
-            if equal_nodes and not auto:
-                continue
-
-            if p <= 1 - nodos_deg[v.id] / d and grafo.agregar(Arista(nodo, v, pesos=random.uniform(1.0, 10.0))): 
-                nodos_deg[nodo.id] += 1
-                if not equal_nodes:
-                    nodos_deg[v.id] += 1
+    for nodo in nodos: 
+        for v in nodos: 
+            if grado_nodo[nodo.id] == d: 
+                break 
+            if grado_nodo[v.id] == d: 
+                continue 
+            p = random.random() 
+            if v == nodo and not auto: 
+                continue 
+            if p <= 1 - grado_nodo[v.id] / d and len([a for a in grafo.aristas if a.nodo1 == nodo and a.nodo2 == v]) == 0: 
+                arista = Arista(nodo, v, pesos=random.uniform(1.0, 10.0)) 
+                grafo.agregar_arista(arista) 
+                grado_nodo[nodo.id] += 1 
+                if nodo != v: 
+                    grado_nodo[v.id] += 1 
 
     return grafo
 
