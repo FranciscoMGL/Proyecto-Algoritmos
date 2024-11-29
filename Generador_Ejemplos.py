@@ -23,7 +23,7 @@ class EjemploGrafo:
 
         except Exception as e:
             print(f"Error al crear Grafo Erdös-Rényi: {e}")
-        """
+        
         try:
             # Grafo Gilbert
             self.grafo_gilbert = grafoGilbert(self.nodos, 0.1)
@@ -71,7 +71,7 @@ class EjemploGrafo:
             
         except Exception as e:
             print(f"Error al crear Grafo Barabási-Albert: {e}")
-        """
+        
         try:
             # Grafo Dorogovtsev-Mendes
             self.grafo_dorogovtsev = grafoDorogovtsevMendes(self.nodos)
@@ -112,7 +112,7 @@ def ejecutar_ejemplos():
     grafo_malla_250.guardar_graphviz_algoritmo("KruskalI_malla_250.gv", aem_kruskalI, algoritmo = "kruskal")
     aem_prim = grafo_malla_250.Prim()
     grafo_malla_250.guardar_graphviz_algoritmo("Prim_malla_250.gv", aem_prim, algoritmo = "prim")
-    """
+    
     grafo_malla_500 = grafoMalla(25, 20)
     print("Grafo de Malla (500 nodos):")
     grafo_malla_500.mostrar_grafo()
@@ -123,7 +123,7 @@ def ejecutar_ejemplos():
     grafo_malla_500.guardar_graphviz_algoritmo("KruskalI_malla_500.gv", aem_kruskalI, algoritmo = "kruskal")
     aem_prim = grafo_malla_500.Prim()
     grafo_malla_500.guardar_graphviz_algoritmo("Prim_malla_500.gv", aem_prim, algoritmo = "prim")
-    """
+    
     # Crear ejemplos de otros grafos
     for nodos in nodos_list:
         ejemplo = EjemploGrafo(nodos)
