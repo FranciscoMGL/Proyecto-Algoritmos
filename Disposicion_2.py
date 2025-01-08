@@ -92,6 +92,9 @@ class AlgoritmoFruchtermanReingold:
             # Dibujar el grafo
             dibujar_grafo()
 
+            # Retraso de 30 ms para ralentizar la visualización
+            pygame.time.delay(30)  # 30 milisegundos de retraso
+
         # Mantener la ventana abierta
         ejecutando = True
         while ejecutando:
@@ -102,11 +105,11 @@ class AlgoritmoFruchtermanReingold:
 
 # Ejemplo de uso
 if __name__ == "__main__":
-    grafo_malla = grafoDorogovtsevMendes(500)
+    grafo= grafoErdosRenyi(500, 666)
     # Extraer nodos y aristas del grafo
-    conjunto_nodos = {nodo.id: {'x': random.randint(600, 1200), 'y': random.randint(330, 660), 'fx': 0, 'fy': 0} for nodo in grafo_malla.nodos}
-    conjunto_aristas = [(arista.nodo1.id, arista.nodo2.id) for arista in grafo_malla.aristas]
+    conjunto_nodos = {nodo.id: {'x': random.randint(600, 1200), 'y': random.randint(330, 660), 'fx': 0, 'fy': 0} for nodo in grafo.nodos}
+    conjunto_aristas = [(arista.nodo1.id, arista.nodo2.id) for arista in grafo.aristas]
 
     # Ajustar parámetros de Fruchterman-Reingold para evitar la sobreposición
     fr_algoritmo = AlgoritmoFruchtermanReingold(conjunto_nodos, conjunto_aristas)
-    fr_algoritmo.ejecutar(constante_repulsion=3.0, constante_atraccion=1, numero_iteraciones=1000, constante_amortiguamiento=0.2, umbral_distanacia=60)
+    fr_algoritmo.ejecutar(constante_repulsion=1.0, constante_atraccion=0.3, numero_iteraciones=1000, constante_amortiguamiento=0.001, umbral_distanacia=40)

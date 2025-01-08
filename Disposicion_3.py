@@ -1,4 +1,4 @@
-from Biblioteca_grafos import grafoBarabasiAlbert
+from Biblioteca_grafos import grafoMalla, grafoErdosRenyi, grafoGilbert, grafoGeografico, grafoBarabasiAlbert, grafoDorogovtsevMendes
 import pygame
 import random
 import math
@@ -13,14 +13,14 @@ reloj = pygame.time.Clock()
 
 # Parámetros del modelo de resortes
 atraccion = 0.05  # Constante de fuerza atractiva
-repulsion = 250  # Constante de fuerza repulsiva
+repulsion = 10  # Constante de fuerza repulsiva
 FRICCION = 0.97  # Incrementar fricción para estabilizar
 MAX_VELOCIDAD = 5  # Limitar la velocidad máxima de los nodos
 MIN_DISTANCIA = 5  # Evitar explosiones por nodos demasiado cercanos
 THETA = 0.5  # Parámetro de apertura para Barnes-Hut
 
 # Generar grafo utilizando el modelo deseado
-grafo = grafoBarabasiAlbert(100, 5)
+grafo = grafoErdosRenyi(500, 666)
 
 # Extraer nodos y aristas del grafo
 nodos = {nodo.id: [random.randint(10, ANCHO - 10), random.randint(10, ALTO - 10)] for nodo in grafo.nodos}
